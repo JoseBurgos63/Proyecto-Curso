@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Agregar material a {{ course.name }}</h2>
+<form method="post" enctype="multipart/form-data" class="card card-body">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-primary" type="submit">Guardar material</button>
+</form>
+{% endblock %}
