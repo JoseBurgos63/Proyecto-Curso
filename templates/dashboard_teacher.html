@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-3">Panel docente</h1>
+<p class="text-muted">Administra tus cursos, actividades y notificaciones.</p>
+<div class="row mb-4">
+  <div class="col-md-8">
+    <h5>Tus cursos</h5>
+    <ul class="list-group mb-3">
+      {% for course in courses %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'course_detail' course.id %}">{{ course.name }} ({{ course.code }})</a>
+          <span class="badge text-bg-primary">{{ course.level }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item">Aún no tienes cursos. <a href="{% url 'course_create' %}">Crear curso</a></li>
+      {% endfor %}
+    </ul>
+    <h5>Entregas pendientes de calificación</h5>
+    <ul class="list-group">
+      {% for submission in pending_submissions %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ submission.student.username }} - {{ submission.activity.title }}</span>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'submission_grade' submission.id %}">Calificar</a>
+        </li>
+      {% empty %}
+        <li class="list-group-item">No hay entregas pendientes</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-4">
+    <h5>Notificaciones recientes</h5>
+    <div class="list-group">
+      {% for notif in notifications %}
+      <div class="list-group-item">
+        <small class="text-muted">{{ notif.created_at|date:"d/m/Y H:i" }}</small>
+        <p class="mb-0">{{ notif.message }}</p>
+      </div>
+      {% empty %}
+      <p class="text-muted">Sin avisos.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2>{{ course.name }}</h2>
+    <p class="text-muted">Código {{ course.code }} · Nivel {{ course.level }}</p>
+  </div>
+  {% if user.profile.role == 'teacher' %}
+  <div class="btn-group">
+    <a class="btn btn-outline-primary" href="{% url 'material_create' course.id %}">Agregar material</a>
+    <a class="btn btn-outline-secondary" href="{% url 'activity_create' course.id %}">Nueva actividad</a>
+    <a class="btn btn-outline-success" href="{% url 'attendance_mark' course.id %}">Marcar asistencia</a>
+  </div>
+  {% else %}
+  <a class="btn btn-primary" href="{% url 'course_enroll' course.id %}">Matricularse</a>
+  {% endif %}
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <h4>Materiales</h4>
+    <ul class="list-group mb-4">
+      {% for material in materials %}
+      <li class="list-group-item">
+        <strong>{{ material.title }}</strong>
+        <p class="mb-1">{{ material.description }}</p>
+        {% if material.file %}
+          <a href="{{ material.file.url }}" class="btn btn-sm btn-outline-primary" download>Descargar</a>
+        {% endif %}
+        {% if material.url %}
+          <a href="{{ material.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">Abrir enlace</a>
+        {% endif %}
+      </li>
+      {% empty %}
+      <li class="list-group-item">No hay material aún.</li>
+      {% endfor %}
+    </ul>
+    <h4>Asistencia reciente</h4>
+    <ul class="list-group">
+      {% for attendance in attendance_records %}
+      <li class="list-group-item d-flex justify-content-between">
+        <span>{{ attendance.student.username }} - {{ attendance.session_date }}</span>
+        <span class="badge text-bg-{% if attendance.status == 'present' %}success{% else %}danger{% endif %}">{{ attendance.get_status_display }}</span>
+      </li>
+      {% empty %}
+      <li class="list-group-item">Sin registros.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-6">
+    <h4>Actividades</h4>
+    <ul class="list-group mb-4">
+      {% for activity in activities %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ activity.title }}</strong>
+            <p class="mb-1">{{ activity.description }}</p>
+            <small class="text-muted">Fecha límite: {{ activity.due_date|date:"d/m/Y H:i" }}</small>
+          </div>
+          <div class="btn-group">
+            {% if user.profile.role == 'student' %}
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'activity_submit' activity.id %}">Entregar</a>
+            {% endif %}
+            {% if user.profile.role == 'teacher' %}
+              {% for submission in activity.submissions.all %}
+                {% if not submission.grade %}
+                  <a class="btn btn-sm btn-outline-success" href="{% url 'submission_grade' submission.id %}">Calificar</a>
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </li>
+      {% empty %}
+      <li class="list-group-item">No hay actividades.</li>
+      {% endfor %}
+    </ul>
+    <h4>Estudiantes matriculados</h4>
+    <ul class="list-group">
+      {% for enrollment in enrollments %}
+      <li class="list-group-item">
+        {{ enrollment.full_name }} ({{ enrollment.national_id }})
+      </li>
+      {% empty %}
+      <li class="list-group-item">Nadie se ha inscrito todavía.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
